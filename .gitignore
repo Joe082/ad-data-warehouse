@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs / runtime data
+*.log
+data/
+
+# Java / Maven build outputs
+**/target/
+
+# Temporary files
+*.tmp
+*.swp
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# FineBI proprietary installer
+docker/finebi/linux_unix_FineBI6_0-CN.sh
+docker/finebi/*.sh
+
+# Large/local archives
+*.tar.gz
+
+# Python
+__pycache__/
+*.pyc
