@@ -15,12 +15,21 @@ services:
       - mysql_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
 
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pmysql"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   namenode:
     build:
       context: .
       dockerfile: docker/hadoop/Dockerfile
     image: ad-hadoop:3.3.6
+
+    ports:
+      - "9870:9870"
+
 
     volumes:
       - namenode_data:/data/namenode
@@ -59,7 +68,8 @@ services:
     container_name: ad-mock-1
 
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
     volumes:
       - ./data/ad-mock/node1:/opt/module/ad_mock/log
@@ -71,7 +81,8 @@ services:
     container_name: ad-mock-2
 
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
     volumes:
       - ./data/ad-mock/node2:/opt/module/ad_mock/log  
@@ -130,10 +141,12 @@ services:
     depends_on:
       - kafka
 
+
     volumes:
       - ./config/flume/ad_file_to_kafka.conf:/opt/flume/job/ad_file_to_kafka.conf:ro
       - ./data/ad-mock:/logs:ro
       - ./data/flume/position:/flume-data
+      - ./config/flume/flume-env.sh:/opt/flume/conf/flume-env.sh:ro
 
     command:
       - /opt/flume/bin/flume-ng
@@ -183,8 +196,20 @@ services:
     container_name: ad-hive-metastore
 
     depends_on:
-      - mysql
-      - namenode
+      mysql:
+        condition: service_healthy
+      namenode:
+        condition: service_started
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "bash -c 'echo > /dev/tcp/127.0.0.1/9083'"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
     environment:
       SERVICE_NAME: metastore
@@ -198,6 +223,8 @@ services:
     ports:
       - "9083:9083"
 
+
+
   hiveserver2:
     build:
       context: .
@@ -206,18 +233,21 @@ services:
     container_name: ad-hiveserver2
 
     depends_on:
-      - hive-metastore
-      - namenode
+      hive-metastore:
+        condition: service_healthy
+      namenode:
+        condition: service_started
 
     environment:
       SERVICE_NAME: hiveserver2
-      SKIP_SCHEMA_INIT: "true"
+      IS_RESUME: "true"
 
     volumes:
       - ./config/hive/hive-site.xml:/opt/hive/conf/hive-site.xml:ro
       - ./config/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
       - ./config/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
       - ./udf:/opt/ad/udf:ro
+      - ./sql:/opt/ad/sql:ro
 
     ports:
       - "10000:10000"

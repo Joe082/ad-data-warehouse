@@ -44,7 +44,7 @@ load_data() {
     echo "Source: $SOURCE_PATH"
     echo "========================================"
 
-    docker exec ad-namenode hdfs dfs -test -e "$SOURCE_PATH"
+    docker compose exec -T namenode hdfs dfs -test -e "$SOURCE_PATH"
 
     if [ $? -eq 0 ]; then
       SQL="${SQL}

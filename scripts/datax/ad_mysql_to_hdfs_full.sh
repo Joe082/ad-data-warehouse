@@ -19,10 +19,10 @@ sync_table() {
     echo "========================================"
 
     # 如果目录已经存在，删除旧数据
-    docker exec ad-namenode hdfs dfs -rm -r -f "${TARGET_DIR}" 2>/dev/null || true
+    docker compose exec -T namenode hdfs dfs -rm -r -f "${TARGET_DIR}" 2>/dev/null || true
 
     # 创建当天目录
-    docker exec ad-namenode hdfs dfs -mkdir -p "${TARGET_DIR}"
+    docker compose exec -T namenode hdfs dfs -mkdir -p "${TARGET_DIR}"
 
     # 执行 DataX
     docker exec ad-datax \

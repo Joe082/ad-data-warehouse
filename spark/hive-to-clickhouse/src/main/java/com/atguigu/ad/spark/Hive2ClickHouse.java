@@ -87,7 +87,7 @@ public class Hive2ClickHouse {
         String partition = cmd.getOptionValue("hive_partition");
 
         String hdfsPath =
-                "hdfs://ad-namenode:8020/warehouse/ad/dwd/"
+                "hdfs://namenode:8020/warehouse/ad/dwd/"
                 + hiveTable
                 + "/dt="
                 + partition;
