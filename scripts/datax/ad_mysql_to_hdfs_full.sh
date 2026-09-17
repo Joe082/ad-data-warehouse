@@ -11,6 +11,7 @@ fi
 sync_table() {
     TABLE_NAME=$1
     TARGET_DIR="/origin_data/ad/db/${TABLE_NAME}_full/${DO_DATE}"
+    TABLE_DIR="/origin_data/ad/db/${TABLE_NAME}_full"
     JOB_FILE="/opt/datax/job/import/ad.${TABLE_NAME}.json"
 
     echo "========================================"
@@ -19,16 +20,25 @@ sync_table() {
     echo "========================================"
 
     # 如果目录已经存在，删除旧数据
-    docker compose exec -T namenode hdfs dfs -rm -r -f "${TARGET_DIR}" 2>/dev/null || true
+    docker compose exec -T namenode \
+        hdfs dfs -rm -r -f "${TARGET_DIR}" 2>/dev/null || true
 
     # 创建当天目录
-    docker compose exec -T namenode hdfs dfs -mkdir -p "${TARGET_DIR}"
+    docker compose exec -T namenode \
+        hdfs dfs -mkdir -p "${TARGET_DIR}"
 
     # 执行 DataX
     docker exec ad-datax \
-  python3 /opt/datax/bin/datax.py \
-  -p"-Dtargetdir=${TARGET_DIR}" \
-  "${JOB_FILE}"
+        python3 /opt/datax/bin/datax.py \
+        -p"-Dtargetdir=${TARGET_DIR}" \
+        "${JOB_FILE}"
+
+    # 让 Hive LOAD DATA 可以移动该目录
+    docker compose exec -T namenode \
+        hdfs dfs -chown -R hive:supergroup "${TABLE_DIR}"
+
+    docker compose exec -T namenode \
+        hdfs dfs -chmod -R 775 "${TABLE_DIR}"
 }
 
 case "$TABLE" in
