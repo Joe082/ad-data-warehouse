@@ -1,7 +1,22 @@
 USE ad;
 
+
+ADD JAR /opt/ad/udf/parse-ip/target/ad-hive-udf-parse-ip-1.0-SNAPSHOT-jar-with-dependencies.jar;
+
+ADD JAR /opt/ad/udf/parse-ua/target/ad-hive-udf-parse-ua-1.0-SNAPSHOT-jar-with-dependencies.jar;
+
+CREATE TEMPORARY FUNCTION parse_ip
+AS 'com.atguigu.ad.hive.udf.ParseIP';
+
+CREATE TEMPORARY FUNCTION parse_ua
+AS 'com.atguigu.ad.hive.udf.ParseUA';
+
 SET hive.vectorized.execution.enabled=false;
 SET hive.auto.convert.join=false;
+
+SET hive.vectorized.execution.enabled=false;
+SET hive.auto.convert.join=false;
+
 
 
 -- =====================================================

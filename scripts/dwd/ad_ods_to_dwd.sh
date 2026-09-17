@@ -11,8 +11,11 @@ echo "=========================================="
 echo "Running DWD ETL for date: ${do_date}"
 echo "=========================================="
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
 docker cp \
-    /opt/ad/sql/dwd/ad_ods_to_dwd.sql \
+    "$PROJECT_ROOT/sql/dwd/ad_ods_to_dwd.sql" \
     ad-hiveserver2:/tmp/ad_ods_to_dwd.sql
 
 docker exec -i ad-hiveserver2 \

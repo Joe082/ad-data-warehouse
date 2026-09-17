@@ -13,15 +13,14 @@ services:
 
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
 
 
   namenode:
+    build:
+      context: .
+      dockerfile: docker/hadoop/Dockerfile
     image: ad-hadoop:3.3.6
-    container_name: ad-namenode
-
-    ports:
-      - "9870:9870"
-      - "8020:8020"
 
     volumes:
       - namenode_data:/data/namenode
@@ -78,6 +77,10 @@ services:
       - ./data/ad-mock/node2:/opt/module/ad_mock/log  
 
   datax:
+    build:
+      context: docker/datax
+      dockerfile: Dockerfile
+
     image: ad-datax:local
     container_name: ad-datax
 
@@ -120,6 +123,7 @@ services:
     build:
       context: .
       dockerfile: docker/flume/Dockerfile
+    image: ad-flume:1.11.0
 
     container_name: ad-flume-producer
 
@@ -143,9 +147,7 @@ services:
       - -Dflume.root.logger=INFO,console
 
   flume-consumer:
-    build:
-      context: .
-      dockerfile: docker/flume/Dockerfile
+    image: ad-flume:1.11.0
 
     container_name: ad-flume-consumer
 
@@ -160,7 +162,6 @@ services:
       - ./config/flume/ad_kafka_to_hdfs.conf:/opt/flume/job/ad_kafka_to_hdfs.conf:ro
       - ./config/flume/flume-env.sh:/opt/flume/conf/flume-env.sh:ro
       - ./data/flume/consumer:/flume-data
-      - ./flume-interceptor/target/flume-interceptor-1.0-SNAPSHOT.jar:/opt/flume/lib/flume-interceptor.jar:ro
 
     command:
       - /opt/flume/bin/flume-ng
@@ -172,6 +173,7 @@ services:
       - -f
       - /opt/flume/job/ad_kafka_to_hdfs.conf
       - -Dflume.root.logger=INFO,console
+
 
   hive-metastore:
     build:
@@ -215,6 +217,7 @@ services:
       - ./config/hive/hive-site.xml:/opt/hive/conf/hive-site.xml:ro
       - ./config/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
       - ./config/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./udf:/opt/ad/udf:ro
 
     ports:
       - "10000:10000"
@@ -240,11 +243,10 @@ services:
     build:
       context: .
       dockerfile: docker/spark/Dockerfile
+    image: ad-spark:3.3.1
     container_name: ad-spark
     hostname: ad-spark
     command: ["sleep", "infinity"]
-    volumes:
-      - ./spark/hive-to-clickhouse:/app/hive-to-clickhouse
 
 
   dolphinscheduler:

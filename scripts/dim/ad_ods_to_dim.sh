@@ -2,7 +2,6 @@
 
 APP=ad
 
-# 日期参数：有第二个参数就用第二个，否则默认昨天
 do_date=$2
 
 if [ -z "$do_date" ]; then

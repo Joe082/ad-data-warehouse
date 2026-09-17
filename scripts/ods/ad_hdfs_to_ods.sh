@@ -53,7 +53,8 @@ OVERWRITE INTO TABLE ${APP}.${TABLE}
 PARTITION(dt='${DO_DATE}');
 "
     else
-      echo "Skip: $SOURCE_PATH does not exist"
+      echo "ERROR: $SOURCE_PATH does not exist"
+      exit 1
     fi
   done
 
